@@ -1,5 +1,5 @@
 ---
 - name: Make VM
-  hosts: rhp1
+  hosts: localhost
   roles:
     - role: make_ci_vm

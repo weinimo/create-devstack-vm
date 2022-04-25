@@ -1,1 +1,4 @@
 [vm]
+
+[vm:vars]
+ansible_ssh_common_args='-o StrictHostKeyChecking=accept-new'
