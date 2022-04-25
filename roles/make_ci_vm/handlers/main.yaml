@@ -1,0 +1,10 @@
+---
+#- name: Restart libvirt network
+#  become: yes
+#  shell: virsh net-destroy default && virsh net-start default
+
+- name: Start VM
+  become: yes
+  virt:
+    name: "{{ ds_hostname }}"
+    state: running

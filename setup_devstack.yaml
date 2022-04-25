@@ -1,0 +1,7 @@
+---
+- name: Setup devstack VM
+  hosts: vm
+  vars:
+    ansible_ssh_common_args='-o StrictHostKeyChecking=accept-new'
+  roles:
+    - role: setup_devstack

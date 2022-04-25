@@ -1,0 +1,99 @@
+---
+- name: Install packages
+  become: yes
+  package:
+    name:
+      - bash-completion
+      - git
+      - iptables-utils
+      - vim
+
+- name: Configure Python debug server variables
+  lineinfile:
+    path: ".bashrc"
+    line: "{{ item }}"
+  with_items:
+    - export DEBUGGER_TYPE=pydev
+    - export DEBUGGER_PORT=9999
+    - export DEBUGGER_HOST=192.168.122.1
+
+- name: Configure time sync
+  become: yes
+  lineinfile:
+    path: /etc/cron.hourly/chronyc
+    create: yes
+    line: sudo chronyc makestep
+    mode: 0755
+
+- name: Sync time
+  become: yes
+  command: chronyc makestep
+
+- name: Create Git clones
+  git:
+    repo: "https://opendev.org/openstack/{{ item }}.git"
+    dest: "{{ item }}"
+    update: no
+    depth: 5
+  with_items:
+    - devstack
+    - neutron
+
+- name: Copy local.conf
+  template:
+    src: local.conf.j2
+    dest: devstack/local.conf
+    force: no
+
+- name: Copy restack.conf
+  copy:
+    src: restack.sh
+    dest: devstack/restack.sh
+    mode: 0755
+
+- name: Create /opt/stack
+  become: yes
+  file:
+    path: /opt/stack
+    state: directory
+    owner: stack
+
+- name: Synchronize local development files
+  synchronize:
+    src: "~/openstack/{{ item }}"
+    dest: "/opt/stack/"
+    rsync_opts:
+      - "--exclude=.tox"
+  with_items:
+    - barbican-tempest-plugin
+    - designate-tempest-plugin
+    - devstack-helpers
+    - octavia
+    - octavia-dashboard
+    - octavia-lib
+    - octavia-tempest-plugin
+    - ovn-octavia-provider
+    - tempest
+
+- name: Run restack.sh
+  command:
+    chdir: devstack/
+    cmd: ./restack.sh
+
+- name: Install bash completion
+  become: yes
+  shell:
+    cmd: openstack complete | tee /etc/bash_completion.d/osc.bash_completion
+    creates: /etc/bash_completion.d/osc.bash_completion
+
+- name: Install os-log-merger
+  become: yes
+  pip:
+    name: os-log-merger
+
+- name: Install helper scripts
+  become: yes
+  pip:
+    chdir: /opt/stack/devstack-helpers
+    editable: yes
+    name: .

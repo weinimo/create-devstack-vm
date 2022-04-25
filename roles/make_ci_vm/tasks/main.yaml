@@ -1,0 +1,124 @@
+---
+- name: Destroy old VM if already existing
+  become: yes
+  virt:
+    name: "{{ ds_hostname }}"
+    state: destroyed
+  ignore_errors: True
+
+- name: Delete old VM if already existing
+  become: yes
+  virt:
+    name: "{{ ds_hostname }}"
+    command: undefine
+  register: vm_deleted
+  ignore_errors: True
+
+- name: Delete VM folder if already existing
+  ansible.builtin.file:
+    path: "{{ ds_base_dir }}/{{ ds_hostname }}"
+    state: absent
+
+- name: Create new folder
+  ansible.builtin.file:
+    path: "{{ ds_base_dir }}/{{ ds_hostname }}"
+    state: directory
+
+- name: Create a new copy of the base image
+  ansible.builtin.copy:
+    src: "{{ ds_base_dir }}/{{ ds_base_img }}"
+    dest: "{{ ds_base_dir }}/{{ ds_hostname }}/image.qcow2"
+    remote_src: yes
+
+- name: Get SSH pubkey
+  command: "cat {{ ansible_env.HOME }}/.ssh/id_rsa.pub"
+  register: ssh_pubkey
+
+- name: Create cloud-init user-data
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ ds_base_dir }}/{{ ds_hostname }}/{{ item }}"
+  with_items:
+    - user-data
+    - meta-data
+
+- name: Create cloud-init meta-data
+  template:
+    src: meta-data.j2
+    dest: "{{ ds_base_dir }}/{{ ds_hostname }}/meta-data"
+
+- name: Generate cloud-init ISO
+  command: |
+    genisoimage -o {{ ds_base_dir }}/{{ ds_hostname }}/init.iso \
+      -V cidata -r -J \
+      -graft-points meta-data={{ ds_base_dir }}/{{ ds_hostname }}/meta-data \
+      user-data={{ ds_base_dir }}/{{ ds_hostname }}/user-data
+
+- name: Define VM from XML
+  become: yes
+  virt:
+    command: define
+    xml: "{{ lookup('template', 'libvirt.xml.j2') }}"
+#  notify: Start VM
+
+- name: Start VM
+  become: yes
+  virt:
+    name: "{{ ds_hostname }}"
+    state: running
+
+- name: Get MAC of virtual bridge
+  become: true
+  shell: "virsh domiflist {{ ds_hostname }} | awk '{ print $5 }' | tail -2 | head -1"
+  register: ds_virbr_mac
+
+- name: Give the VM 10 seconds to get an IP lease
+  wait_for:
+    timeout: 10
+  delegate_to: localhost
+
+- name: Get guest IP address
+  shell: "arp -e | grep {{ ds_virbr_mac.stdout }} | awk '{ print $1 }'"
+  register: arp_virbr_ip
+
+- name: "Set ds_vm_ip variable to {{ arp_virbr_ip.stdout }}"
+  set_fact:
+    ds_vm_ip: "{{ arp_virbr_ip.stdout }}"
+
+- name: Add new VM hostname to the hosts /etc/hosts
+  become: yes
+  lineinfile:
+    path: /etc/hosts
+    regexp: " {{ ds_hostname }}$"
+    line: "{{ ds_vm_ip }} {{ ds_hostname }}"
+
+- name: Add new VM hostname to the hosts ~/ssh/config
+  lineinfile:
+    path: ~/.ssh/config
+    regexp: "^Host {{ ds_hostname }}$"
+    line: "Host {{ ds_hostname }}\n  User stack"
+
+#- name: Add new VM hostname to the hosts ~/ssh/config
+#  lineinfile:
+#    path: ~/.ssh/config
+#    insertafter: "^Host {{ ds_hostname }}"
+#    line: "    User stack"
+
+- name: Add hostname to Ansible inventory
+  lineinfile:
+    path: "{{ playbook_dir }}/hosts"
+    insertafter: ^\[vm\]$
+    regexp: "^{{ ds_hostname }}$"
+    line: "{{ ds_hostname }}"
+  delegate_to: localhost
+
+- name: Ensure no entry for that guest is in ~/.ssh/known_hosts yet
+  lineinfile:
+    path: ~/.ssh/known_hosts
+    regexp: "^{{ ds_hostname }} "
+    state: absent
+
+- name: Give the VM a few more seconds to boot
+  wait_for:
+    timeout: 20
+  delegate_to: localhost
