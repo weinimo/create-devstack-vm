@@ -34,18 +34,13 @@
   command: "cat {{ ansible_env.HOME }}/.ssh/id_rsa.pub"
   register: ssh_pubkey
 
-- name: Create cloud-init user-data
+- name: Create cloud-init user-data and meta-data
   template:
     src: "{{ item }}.j2"
     dest: "{{ ds_base_dir }}/{{ ds_hostname }}/{{ item }}"
   with_items:
     - user-data
     - meta-data
-
-- name: Create cloud-init meta-data
-  template:
-    src: meta-data.j2
-    dest: "{{ ds_base_dir }}/{{ ds_hostname }}/meta-data"
 
 - name: Generate cloud-init ISO
   command: |
@@ -72,9 +67,9 @@
   shell: "virsh domiflist {{ ds_hostname }} | awk '{ print $5 }' | tail -2 | head -1"
   register: ds_virbr_mac
 
-- name: Give the VM 10 seconds to get an IP lease
+- name: Give the VM 15 seconds to get an IP lease
   wait_for:
-    timeout: 10
+    timeout: 15
   delegate_to: localhost
 
 - name: Get guest IP address
@@ -96,13 +91,7 @@
   lineinfile:
     path: ~/.ssh/config
     regexp: "^Host {{ ds_hostname }}$"
-    line: "Host {{ ds_hostname }}\n  User stack"
-
-#- name: Add new VM hostname to the hosts ~/ssh/config
-#  lineinfile:
-#    path: ~/.ssh/config
-#    insertafter: "^Host {{ ds_hostname }}"
-#    line: "    User stack"
+    line: "Host {{ ds_hostname }}\n\tUser stack"
 
 - name: Add hostname to Ansible inventory
   lineinfile:
@@ -120,5 +109,5 @@
 
 - name: Give the VM a few more seconds to boot
   wait_for:
-    timeout: 20
+    timeout: 15
   delegate_to: localhost
