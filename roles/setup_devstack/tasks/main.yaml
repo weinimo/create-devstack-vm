@@ -17,6 +17,10 @@
     - export DEBUGGER_PORT=9999
     - export DEBUGGER_HOST=192.168.122.1
 
+- name: Set time zone
+  become: yes
+  command: timedatectl set-timezone Europe/Monaco
+
 - name: Configure time sync
   become: yes
   lineinfile:
