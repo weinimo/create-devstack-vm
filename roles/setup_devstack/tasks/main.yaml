@@ -5,8 +5,15 @@
     name:
       - bash-completion
       - git
-      - iptables-utils
+      - nano
       - vim
+
+- name: Install RedHat specific packages
+  become: yes
+  dnf:
+    name:
+      - iptables-utils
+  when: ansible_os_family == 'RedHat'
 
 - name: Configure Python debug server variables
   lineinfile:
@@ -17,10 +24,6 @@
     - export DEBUGGER_PORT=9999
     - export DEBUGGER_HOST=192.168.122.1
 
-- name: Set time zone
-  become: yes
-  command: timedatectl set-timezone Europe/Monaco
-
 - name: Configure time sync
   become: yes
   lineinfile:
@@ -28,10 +31,12 @@
     create: yes
     line: sudo chronyc makestep
     mode: 0755
+  when: ansible_os_family == 'RedHat'
 
 - name: Sync time
   become: yes
   command: chronyc makestep
+  when: ansible_os_family == 'RedHat'
 
 - name: Create Git clones
   git:
@@ -79,6 +84,14 @@
     - ovn-octavia-provider
     - tempest
 
+- name: For compatibility with some scripts create hard link /mnt/host
+  become: yes
+  ansible.builtin.file:
+    src: /opt/stack
+    dest: /mnt/host
+    owner: stack
+    state: hard
+
 - name: Run restack.sh
   command:
     chdir: devstack/
@@ -87,7 +100,7 @@
 - name: Install bash completion
   become: yes
   shell:
-    cmd: openstack complete | tee /etc/bash_completion.d/osc.bash_completion
+    cmd: openstack complete > /etc/bash_completion.d/osc.bash_completion
     creates: /etc/bash_completion.d/osc.bash_completion
 
 - name: Install os-log-merger

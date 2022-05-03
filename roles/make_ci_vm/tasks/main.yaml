@@ -93,6 +93,19 @@
     regexp: "^Host {{ ds_hostname }}$"
     line: "Host {{ ds_hostname }}\n\tUser stack"
 
+- name: Ensure [vm] group is in Ansible inventory
+  lineinfile:
+    path: "{{ playbook_dir }}/hosts"
+    regexp: ^\[vm\]$
+    line: "[vm]"
+
+- name: Ensure [vm:vars] is in Ansible inventory
+  blockinfile:
+    path: "{{ playbook_dir }}/hosts"
+    block: |
+      [vm:vars]
+      ansible_ssh_common_args='-o StrictHostKeyChecking=accept-new'
+
 - name: Add hostname to Ansible inventory
   lineinfile:
     path: "{{ playbook_dir }}/hosts"

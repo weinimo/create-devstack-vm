@@ -1,7 +1,8 @@
-    #cloud-config
-    user: stack
-    password: $6$xtglNY5cwTJWbLg3$8kDAqkocz54gvz7vMc899TC/TaJHrwni07JviwHfs.exzYE69hLFwPEAWgAE8YY3lsFLdyTKW3W0VPY7qGPl2/
-    chpasswd: {expire: False}
-    ssh_pwauth: True
-    ssh_authorized_keys:
-    - {{ ssh_pubkey.stdout }}
+#cloud-config
+user: stack
+password: $6$xtglNY5cwTJWbLg3$8kDAqkocz54gvz7vMc899TC/TaJHrwni07JviwHfs.exzYE69hLFwPEAWgAE8YY3lsFLdyTKW3W0VPY7qGPl2/
+chpasswd: {expire: False}
+ssh_pwauth: True
+ssh_authorized_keys:
+  - {{ ssh_pubkey.stdout }}
+timezone: Europe/Monaco
