@@ -15,5 +15,7 @@ do
   shift
 done
 
+[[ -f hosts ]] || echo "[vm]" > hosts
+
 ansible-playbook -i hosts -K -D $ansible_opts make_vm.yaml
 ansible-playbook -i hosts -D -l $ds_hostname setup_devstack.yaml

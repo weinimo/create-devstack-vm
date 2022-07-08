@@ -2,7 +2,7 @@
 Create Devstack VM
 ==================
 
-This repository contains two Ansible playbooks for automating the creation of
+This repository contains two Ansible roles for automating the creation of
 VMs that run devstack. Simply run the ``setup_vm.sh`` script with the desired
 name of the VM as an argument, like for example ``./setup_vm.sh c9s-debug``.
 Then, Ansible will ask you to enter the sudo password for the local host.
