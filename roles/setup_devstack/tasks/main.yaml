@@ -6,6 +6,7 @@
       - bash-completion
       - git
       - nano
+      - tmux
       - vim
 
 - name: Install RedHat specific packages
@@ -54,11 +55,16 @@
     dest: devstack/local.conf
     force: no
 
-- name: Copy restack.conf
+- name: Copy restack.sh
   copy:
     src: restack.sh
     dest: devstack/restack.sh
     mode: 0755
+
+- name: Copy .tmux.conf
+  copy:
+    src: ~/.tmux.conf
+    dest: .tmux.conf
 
 - name: Create /opt/stack
   become: yes
@@ -66,6 +72,14 @@
     path: /opt/stack
     state: directory
     owner: stack
+
+- name: For compatibility with some scripts create hard link /mnt/host
+  become: yes
+  ansible.builtin.file:
+    src: /opt/stack
+    dest: /mnt/host
+    owner: stack
+    state: link
 
 - name: Synchronize local development files
   synchronize:
@@ -84,13 +98,19 @@
     - ovn-octavia-provider
     - tempest
 
-- name: For compatibility with some scripts create hard link /mnt/host
+- name: Install os-log-merger
   become: yes
-  ansible.builtin.file:
-    src: /opt/stack
-    dest: /mnt/host
-    owner: stack
-    state: hard
+  pip:
+    name: os-log-merger
+    executable: pip
+
+- name: Install helper scripts
+  become: yes
+  pip:
+    chdir: /opt/stack/devstack-helpers
+    editable: yes
+    name: .
+    executable: pip
 
 - name: Run restack.sh
   command:
@@ -102,15 +122,3 @@
   shell:
     cmd: openstack complete > /etc/bash_completion.d/osc.bash_completion
     creates: /etc/bash_completion.d/osc.bash_completion
-
-- name: Install os-log-merger
-  become: yes
-  pip:
-    name: os-log-merger
-
-- name: Install helper scripts
-  become: yes
-  pip:
-    chdir: /opt/stack/devstack-helpers
-    editable: yes
-    name: .
