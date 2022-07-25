@@ -65,6 +65,7 @@
   copy:
     src: ~/.tmux.conf
     dest: .tmux.conf
+  ignore_errors: True
 
 - name: Create /opt/stack
   become: yes
@@ -87,16 +88,7 @@
     dest: "/opt/stack/"
     rsync_opts:
       - "--exclude=.tox"
-  with_items:
-    - barbican-tempest-plugin
-    - designate-tempest-plugin
-    - devstack-helpers
-    - octavia
-    - octavia-dashboard
-    - octavia-lib
-    - octavia-tempest-plugin
-    - ovn-octavia-provider
-    - tempest
+  with_items: "{{ ds_sync_folders }}"
 
 - name: Install os-log-merger
   become: yes

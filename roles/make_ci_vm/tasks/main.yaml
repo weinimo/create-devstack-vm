@@ -67,9 +67,9 @@
   shell: "virsh domiflist {{ ds_hostname }} | awk '{ print $5 }' | tail -2 | head -1"
   register: ds_virbr_mac
 
-- name: Give the VM 15 seconds to get an IP lease
+- name: Give the VM 20 seconds to get an IP lease
   wait_for:
-    timeout: 15
+    timeout: 20
   delegate_to: localhost
 
 - name: Get guest IP address

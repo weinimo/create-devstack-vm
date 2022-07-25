@@ -1,0 +1,11 @@
+---
+ds_sync_folders:
+  - barbican-tempest-plugin
+  - designate-tempest-plugin
+  - devstack-helpers
+  - octavia
+  - octavia-dashboard
+  - octavia-lib
+  - octavia-tempest-plugin
+  - ovn-octavia-provider
+  - tempest
