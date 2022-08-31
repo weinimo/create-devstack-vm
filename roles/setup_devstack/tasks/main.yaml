@@ -6,6 +6,7 @@
       - bash-completion
       - git
       - nano
+      - python3-pip
       - tmux
       - vim
 
@@ -36,7 +37,10 @@
 
 - name: Sync time
   become: yes
-  command: chronyc makestep
+  command: "{{ item }}"
+  with_items:
+    - chronyc 'burst 4/4'
+    - chronyc makestep
   when: ansible_os_family == 'RedHat'
 
 - name: Create Git clones
@@ -67,19 +71,25 @@
     dest: .tmux.conf
   ignore_errors: True
 
+- name: Copy test_server.bin
+  copy:
+    src: "{{ ds_test_server_path }}"
+    dst: "test_server.bin"
+  ignore_errors: True
+
 - name: Create /opt/stack
   become: yes
   file:
     path: /opt/stack
     state: directory
-    owner: stack
+    owner: "stack"
 
 - name: For compatibility with some scripts create hard link /mnt/host
   become: yes
   ansible.builtin.file:
     src: /opt/stack
     dest: /mnt/host
-    owner: stack
+    owner: "stack"
     state: link
 
 - name: Synchronize local development files

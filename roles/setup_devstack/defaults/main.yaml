@@ -9,3 +9,4 @@ ds_sync_folders:
   - octavia-tempest-plugin
   - ovn-octavia-provider
   - tempest
+ds_test_server_path: "{{ lookup('env', 'HOME') }}/openstack/test_server.bin"

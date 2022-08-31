@@ -18,6 +18,17 @@ it depends on you can run::
 
     $ ansible-galaxy install -r requirements.yaml
 
+Image Preparation
+=================
+
+The standard CentOS Stream 9 cloud image has only a 10G file system. To be
+useful it should be resized to at least 20G. These commands will
+resize it to 25G::
+
+    qemu-img resize image.qcow2 +15G
+    cp image.qcow2 image-orig.qcow2
+    virt-resize --expand /dev/sda1 image-orig.qcow2 image.qcow2
+
 Variables
 =========
 
@@ -35,6 +46,7 @@ The following list shows configuration variables and their defaults.
     - octavia-tempest-plugin
     - ovn-octavia-provider
     - tempest
+* ds_test_server_path: "{{ lookup('env', 'HOME') }}/openstack/test_server.bin"
 
 ``ds_base_dir`` is use as a base directory when creating files on the local
 host. The base image configured with ``ds_base_img`` must be store in there.
