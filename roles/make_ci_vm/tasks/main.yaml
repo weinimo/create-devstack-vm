@@ -31,7 +31,7 @@
     remote_src: yes
 
 - name: Get SSH pubkey
-  command: "cat {{ ansible_env.HOME }}/.ssh/id_rsa.pub"
+  command: "cat {{ ds_ssh_pubkey_path }}"
   register: ssh_pubkey
 
 - name: Create cloud-init user-data and meta-data

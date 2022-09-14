@@ -1,4 +1,5 @@
 ---
 ds_base_dir: "{{ lookup('env', 'HOME') }}/VM"
 ds_base_img: "CentOS-Stream-GenericCloud-9-20220211.1.x86_64-ResizedOnly.qcow2"
+ds_ssh_pubkey_path: "{{ lookup('env', 'HOME') }}/.ssh/id_ed25519.pub"
 ds_vm_mac: "{{ '52:54:00' | random_mac }}"
