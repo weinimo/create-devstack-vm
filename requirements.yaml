@@ -1,2 +1,3 @@
-- src: community.general
-- src: community.libvirt
+collections:
+  - name: community.libvirt
+  - name: community.general
