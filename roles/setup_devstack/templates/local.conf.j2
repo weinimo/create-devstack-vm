@@ -6,7 +6,7 @@ HOST_IP={{ ansible_eth0.ipv4.address }}
 LIBVIRT_CPU_MODE="host-passthrough"
 OFFLINE=False
 PUBLIC_NETWORK_GATEWAY=172.24.4.1
-RECLONE=False
+RECLONE={{ ds_reclone }}
 USE_PYTHON3="True"
 VERBOSE=True
 

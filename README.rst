@@ -37,6 +37,7 @@ The following list shows configuration variables and their defaults.
 * ds_base_dir: "{{ lookup('env', 'HOME') }}/VM"
 * ds_base_img: "CentOS-Stream-GenericCloud-9-20220211.1.x86_64-ResizedOnly.qcow2"
 * ds_ssh_pubkey_path: "{{ lookup('env', 'HOME') }}/.ssh/id_ed25519.pub"
+* ds_reclone: "False"
 * ds_sync_folders:
     - barbican-tempest-plugin
     - designate-tempest-plugin
