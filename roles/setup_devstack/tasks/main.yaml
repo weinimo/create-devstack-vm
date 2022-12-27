@@ -68,11 +68,14 @@
     mode: 0755
   tags: devstack
 
-- name: Copy .tmux.conf
+- name: Copy .tmux.conf and .gitconfig
   copy:
-    src: ~/.tmux.conf
-    dest: .tmux.conf
+    src: "{{ item }}"
+    dest: "{{ item }}"
   ignore_errors: True
+  with_items:
+    - ~/.tmux.conf
+    - ~/.gitconfig
 
 - name: Copy test_server.bin
   copy:
