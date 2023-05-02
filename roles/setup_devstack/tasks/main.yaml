@@ -94,6 +94,26 @@
     mode: '0755'
   ignore_errors: True
 
+- name: Create ~/scripts
+  become: yes
+  file:
+    path: "~/scripts"
+    state: directory
+    owner: "stack"
+  tags: devstack
+
+- name: Copy ~/scripts/maketestcerts.sh
+  copy:
+    src: "maketestcerts.sh"
+    dest: "~/scripts/maketestcerts.sh"
+    mode: '0755'
+
+- name: Copy ~/scripts/openssl.cnf
+  copy:
+    src: "openssl.cnf"
+    dest: "~/scripts/openssl.cnf"
+    mode: '0644'
+
 - name: Create /opt/stack
   become: yes
   file:
