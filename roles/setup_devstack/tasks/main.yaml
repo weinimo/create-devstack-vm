@@ -35,6 +35,7 @@
     - export DEBUGGER_TYPE=pydev
     - export DEBUGGER_PORT=9999
     - export DEBUGGER_HOST=192.168.122.1
+    - export GLOBAL_VENV=false
 
 - name: Configure time sync
   become: yes
@@ -95,11 +96,9 @@
   ignore_errors: True
 
 - name: Create ~/scripts
-  become: yes
   file:
-    path: "~/scripts"
+    path: ~/scripts
     state: directory
-    owner: "stack"
   tags: devstack
 
 - name: Copy ~/scripts/maketestcerts.sh
